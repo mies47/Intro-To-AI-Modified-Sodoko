@@ -16,7 +16,7 @@ def initialState(number:int, colors:list, inputData:list):
 
     for i in range(number):
         for j in range(number):
-            num , color = splitNumColor(inputData[(i*number) + j])
+            num , color = splitNumColor(inputData[i][j])
             numberDomain = [k+1 for k in range(number)]
             colorDomain = copy.deepcopy(colors)
             if not num == -1:
@@ -56,7 +56,7 @@ def MRV(state: list):
     minimum = math.inf
     for row in state:
         for col in row:
-            if not(len(col.numberDomain) == 1 and len(col.colorDomain) == 1) and minimum > len(col.numberDomain) * len(col.colorDomain):
+            if not(col.number != -1 and col.color != '#') and minimum > len(col.numberDomain) * len(col.colorDomain):
                 minimum = len(col.numberDomain) * len(col.colorDomain)
     
     return minimum
@@ -148,13 +148,17 @@ def checkValid(state:list , cellRow:int , cellCol:int , num:int, color:str):
 
 def numberFC(state: list, row: int, col: int, number: int):
     'Forward Checking to remove invalid values from cells in the same row and column numberDomain'
-    for i in state[row]:
-        if number in i.numberDomain:
-            i.numberDomain.remove(number)
+    for i in range(len(state)):
+        if i != col and number in state[row][i].numberDomain:
+            state[row][i].numberDomain.remove(number)
+            if len(state[row][i].numberDomain) == 0:
+                return False
     
-    for i in state:
-        if number in i[col].numberDomain:
-            i[col].numberDomain.remove(number)
+    for i in range(len(state)):
+        if i != row and number in state[i][col].numberDomain:
+            state[i][col].numberDomain.remove(number)
+            if len(state[i][col].numberDomain) == 0:
+                return False
 
     return state
 
@@ -162,93 +166,137 @@ def colorFC(state: list, row: int, col: int, number: int, color: str):
     #top cell
     if row - 1 >= 0 and color in state[row - 1][col].colorDomain:
         state[row - 1][col].colorDomain.remove(color)
+        if len(state[row - 1][col].colorDomain) == 0:
+            return False
     if row - 1 >= 0 and state[row - 1][col].color == '#' and state[row - 1][col].number != -1:
         if state[row - 1][col].number > number:
             for colorItem , priority in allColors.items():
-                if(allColors[color] < priority):
+                if(allColors[color] < priority) and colorItem in state[row - 1][col].colorDomain:
                     state[row - 1][col].colorDomain.remove(colorItem)
+                    if len(state[row - 1][col].colorDomain) == 0:
+                        return False
         else:
             for colorItem , priority in allColors.items():
-                if(allColors[color] > priority):
+                if(allColors[color] > priority) and colorItem in state[row - 1][col].colorDomain:
                     state[row - 1][col].colorDomain.remove(colorItem)
+                    if len(state[row - 1][col].colorDomain) == 0:
+                        return False
     elif row - 1 >= 0 and state[row - 1][col].color != '#' and state[row - 1][col].number == -1:
         if allColors[state[row - 1][col].color] < allColors[color]:
             for i in range(len(state[row - 1][col].numberDomain)):
                 if state[row - 1][col].numberDomain[i] < number:
                     state[row - 1][col].numberDomain.pop(i)
+                    if len(state[row - 1][col].numberDomain) == 0:
+                        return False
         else:
             for i in range(len(state[row - 1][col].numberDomain)):
                 if state[row - 1][col].numberDomain[i] > number:
                     state[row - 1][col].numberDomain.pop(i)
+                    if len(state[row - 1][col].numberDomain) == 0:
+                        return False
     #bottom cell
     if row + 1 < len(state) and color in state[row + 1][col].colorDomain:
         state[row + 1][col].colorDomain.remove(color)
+        if len(state[row + 1][col].colorDomain) == 0:
+            return False
     if row + 1 < len(state) and state[row + 1][col].color == '#' and state[row + 1][col].number != -1:
         if state[row + 1][col].number > number:
             for colorItem , priority in allColors.items():
-                if(allColors[color] < priority):
+                if(allColors[color] < priority) and colorItem in state[row + 1][col].colorDomain:
                     state[row + 1][col].colorDomain.remove(colorItem)
+                    if len(state[row + 1][col].colorDomain) == 0:
+                        return False
         else:
             for colorItem , priority in allColors.items():
-                if(allColors[color] > priority):
+                if(allColors[color] > priority) and colorItem in state[row + 1][col].colorDomain:
                     state[row + 1][col].colorDomain.remove(colorItem)
+                    if len(state[row + 1][col].colorDomain) == 0:
+                        return False
     elif row + 1 < len(state) and state[row + 1][col].color != '#' and state[row + 1][col].number == -1:
         if allColors[state[row + 1][col].color] < allColors[color]:
             for i in range(len(state[row + 1][col].numberDomain)):
                 if state[row + 1][col].numberDomain[i] < number:
                     state[row + 1][col].numberDomain.pop(i)
+                    if len(state[row + 1][col].numberDomain) == 0:
+                        return False
         else:
             for i in range(len(state[row + 1][col].numberDomain)):
                 if state[row + 1][col].numberDomain[i] > number:
                     state[row + 1][col].numberDomain.pop(i)
+                    if len(state[row + 1][col].numberDomain) == 0:
+                        return False
     #left cell
     if col - 1 >= 0 and color in state[row][col - 1].colorDomain:
         state[row][col - 1].colorDomain.remove(color)
+        if len(state[row][col - 1].colorDomain) == 0:
+            return False
     if col - 1 >= 0 and state[row][col - 1].color == '#' and state[row][col - 1].number != -1:
         if state[row][col - 1].number > number:
             for colorItem , priority in allColors.items():
-                if(allColors[color] < priority):
+                if(allColors[color] < priority) and colorItem in state[row][col - 1].colorDomain:
                     state[row][col - 1].colorDomain.remove(colorItem)
+                    if len(state[row][col - 1].colorDomain) == 0:
+                        return False
         else:
             for colorItem , priority in allColors.items():
-                if(allColors[color] > priority):
+                if(allColors[color] > priority) and colorItem in state[row][col - 1].colorDomain:
                     state[row][col - 1].colorDomain.remove(colorItem)
+                    if len(state[row][col - 1].colorDomain) == 0:
+                        return False
     elif col - 1 >= 0 and state[row][col - 1].color != '#' and state[row][col - 1].number == -1:
         if allColors[state[row][col - 1].color] < allColors[color]:
             for i in range(len(state[row][col - 1].numberDomain)):
                 if state[row][col - 1].numberDomain[i] < number:
                     state[row][col - 1].numberDomain.pop(i)
+                    if len(state[row][col - 1].numberDomain) == 0:
+                        return False
         else:
             for i in range(len(state[row][col - 1].numberDomain)):
                 if state[row][col - 1].numberDomain[i] > number:
                     state[row][col - 1].numberDomain.pop(i)
+                    if len(state[row][col - 1].numberDomain) == 0:
+                        return False
     #right cell
     if col + 1 < len(state) and color in state[row][col + 1].colorDomain:
         state[row][col + 1].colorDomain.remove(color)
+        if len(state[row][col + 1].colorDomain) == 0:
+            return False
     if col + 1 < len(state) and state[row][col + 1].color == '#' and state[row][col + 1].number != -1:
         if state[row][col + 1].number > number:
             for colorItem , priority in allColors.items():
-                if(allColors[color] < priority):
+                if(allColors[color] < priority) and colorItem in state[row][col + 1].colorDomain:
                     state[row][col + 1].colorDomain.remove(colorItem)
+                    if len(state[row][col + 1].colorDomain) == 0:
+                        return False
         else:
             for colorItem , priority in allColors.items():
-                if(allColors[color] > priority):
+                if(allColors[color] > priority) and colorItem in state[row][col + 1].colorDomain:
                     state[row][col + 1].colorDomain.remove(colorItem)
+                    if len(state[row][col + 1].colorDomain) == 0:
+                        return False
     elif col + 1 < len(state) and state[row][col + 1].color != '#' and state[row][col + 1].number == -1:
         if allColors[state[row][col + 1].color] < allColors[color]:
             for i in range(len(state[row][col + 1].numberDomain)):
                 if state[row][col + 1].numberDomain[i] < number:
                     state[row][col + 1].numberDomain.pop(i)
+                    if len(state[row][col + 1].numberDomain) == 0:
+                        return False
         else:
             for i in range(len(state[row][col + 1].numberDomain)):
                 if state[row][col + 1].numberDomain[i] > number:
                     state[row][col + 1].numberDomain.pop(i)
+                    if len(state[row][col + 1].numberDomain) == 0:
+                        return False
 
     return state
 
 def assignValue(state: list, row: int, col: int, num: int, color: str):
     state = numberFC(state, row, col, num)
+    if state == False:
+        return False
     state = colorFC(state, row, col, num ,color)
+    if state == False:
+        return False
     state[row][col].number = num
     state[row][col].color = color
     state[row][col].numberDomain = [num]
@@ -263,37 +311,43 @@ def backtrack(state: list):
     cellRow, cellCol = degree(state)
     cell = state[cellRow][cellCol]
 
-    if cell.number == -1 and cell.color == '#':
+    if cell.number == -1 or cell.color == '#':
         for num in cell.numberDomain:
             for color in cell.colorDomain:
                 if checkValid(state, cellRow, cellCol, num, color):
                     newState = copy.deepcopy(state)
                     newState = assignValue(newState,cellRow, cellCol, num, color)
-                    result = backtrack(newState)
-                    if not result == 'failure':
+                    result = None
+                    if newState != False:
+                        result = backtrack(newState)
+                        
+                    if  result is not None and result != 'failure':
                         return result
-    elif cell.number == -1:
-        for num in cell.numberDomain:
-            if checkValid(state, cellRow, cellCol, num, cell.color):
-                newState = copy.deepcopy(state)
-                newState = assignValue(newState,cellRow, cellCol, num, cell.color)
-                result = backtrack(newState)
-                if not result == 'failure':
-                    return result
-    else:
-        for color in cell.colorDomain:
-            if checkValid(state, cellRow, cellCol, cell.number, color):
-                newState = copy.deepcopy(state)
-                newState = assignValue(newState,cellRow, cellCol, cell.number, color)
-                result = backtrack(newState)
-                if not result == 'failure':
-                    return result
 
     return 'failure' 
 
-x = initialState(3, ['r','g','b','y','p'], ['*#', '*#', '*#','*#', '*#', '*#','*#', '*#', '*#'])
+def findInFile():
+    fo = open('test.txt' , 'r')
+    m , n = 0 , 0
+    inputList = []
+    colors = []
+    for i in enumerate(fo.readlines()):
+        if(i[0] != 0):
+            x = i[1].strip().split(' ')
+            if i[0] == 1:
+                colors = x
+            else:
+                inputList.append(x)
+        else:
+            temp = i[1].strip().split(' ')
+            m , n = int(temp[0]) , int(temp[1])
+    fo.close()        
+    return n , colors, inputList        
+
+n, colors, inputList = findInFile()
+x = initialState(n , colors, inputList)
 result = backtrack(x)
-if result == 'failure':
+if result == 'failure' or result == None:
     print(result)
 else:
     for row in result:

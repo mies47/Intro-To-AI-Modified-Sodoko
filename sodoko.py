@@ -8,11 +8,6 @@ class Cell:
         self.colorDomain = colorValues
 
 
-class State:
-    'A class to keep track of cells of the table at any point of time'
-    def __init__(self, cells:list):
-        self.table = cells
-
 def initialState(number:int, colors:list, inputData:list):
     cells = [[0 for i in range(number)] for j in range(number)] 
 
@@ -41,5 +36,23 @@ def splitNumColor(numColor:str):
         color = numColor[-1]
     return(num , color)
 
+
+def backtrack(state: list):
+    if(isComplete(state)):
+        return state
+    
+    cellRow, cellCol = unassignedCell(state)
+    cell = state[cellRow][cellCol]
+
+    for num in cell.numberDomain:
+        for color in cell.colorDomain:
+            if checkValid(state, cellRow, cellCol, num, color):
+                newState = copy.deepcopy(state)
+                newState = assignValue(newState, num, color)
+                result = backtrack(newState)
+                if not result == 'failure':
+                    return result
+
+    return 'failure' 
 
 x = initialState(3, ['r','g','b','y','p'], ['1#', '*b', '*#','*#', '3r', '*#','*g', '1#', '*#'])

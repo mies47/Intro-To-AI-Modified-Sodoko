@@ -97,7 +97,7 @@ def degree(state: list):
     maximumRow , maximumCol = 0, 0
     for row in range(len(state)):
         for col in range(len(state)):
-            if minimum == len(state[row][col].numberDomain) * len(state[row][col].colorDomain):
+            if not(state[row][col].number != -1 and state[row][col].color != '#') and minimum == len(state[row][col].numberDomain) * len(state[row][col].colorDomain):
                 constraints = checkRowConstraint(state, row) + checkColumnConstraint(state, col) + checkColorConstraint(state, row, col)
                 if constraints > maximumConstraint:
                     maximumConstraint = constraints
@@ -118,28 +118,28 @@ def checkValid(state:list , cellRow:int , cellCol:int , num:int, color:str):
     if cellRow - 1 >= 0 and not state[cellRow - 1][cellCol].color == '#':
         if state[cellRow - 1][cellCol].color == color:
             return False
-        if ((allColors[color] < allColors[state[cellRow - 1][cellCol].color] and num < state[cellRow - 1][cellCol].number)
+        if state[cellRow - 1][cellCol].number != -1 and ((allColors[color] < allColors[state[cellRow - 1][cellCol].color] and num < state[cellRow - 1][cellCol].number)
             or (allColors[color] > allColors[state[cellRow - 1][cellCol].color] and num > state[cellRow - 1][cellCol].number)):
             return False
 
     if cellRow + 1 < len(state) and not state[cellRow + 1][cellCol].color == '#':
         if state[cellRow + 1][cellCol].color == color:
             return False
-        if ((allColors[color] < allColors[state[cellRow + 1][cellCol].color] and num < state[cellRow + 1][cellCol].number)
+        if state[cellRow + 1][cellCol].number != -1 and ((allColors[color] < allColors[state[cellRow + 1][cellCol].color] and num < state[cellRow + 1][cellCol].number)
             or (allColors[color] > allColors[state[cellRow + 1][cellCol].color] and num > state[cellRow + 1][cellCol].number)):
             return False
 
     if cellCol - 1 >= 0 and not state[cellRow][cellCol - 1].color == '#':
         if state[cellRow][cellCol - 1].color == color:
             return False
-        if ((allColors[color] < allColors[state[cellRow][cellCol - 1].color] and num < state[cellRow][cellCol - 1].number)
+        if state[cellRow][cellCol - 1].number != -1 and ((allColors[color] < allColors[state[cellRow][cellCol - 1].color] and num < state[cellRow][cellCol - 1].number)
             or (allColors[color] > allColors[state[cellRow][cellCol - 1].color] and num > state[cellRow][cellCol - 1].number)):
             return False
 
     if cellCol + 1 < len(state) and not state[cellRow][cellCol + 1].color == '#':
-        if state[cellRow][cellCol - 1].color == color:
+        if state[cellRow][cellCol + 1].color == color:
             return False
-        if ((allColors[color] < allColors[state[cellRow][cellCol + 1].color] and num < state[cellRow][cellCol + 1].number)
+        if state[cellRow][cellCol + 1].number != -1 and ((allColors[color] < allColors[state[cellRow][cellCol + 1].color] and num < state[cellRow][cellCol + 1].number)
             or (allColors[color] > allColors[state[cellRow][cellCol + 1].color] and num > state[cellRow][cellCol + 1].number)):
             return False
 
@@ -183,15 +183,17 @@ def colorFC(state: list, row: int, col: int, number: int, color: str):
                         return False
     elif row - 1 >= 0 and state[row - 1][col].color != '#' and state[row - 1][col].number == -1:
         if allColors[state[row - 1][col].color] < allColors[color]:
-            for i in range(len(state[row - 1][col].numberDomain)):
-                if state[row - 1][col].numberDomain[i] < number:
-                    state[row - 1][col].numberDomain.pop(i)
+            copyDomain = state[row - 1][col].numberDomain
+            for i in copyDomain:
+                if i < number:
+                    state[row - 1][col].numberDomain.remove(i)
                     if len(state[row - 1][col].numberDomain) == 0:
                         return False
         else:
-            for i in range(len(state[row - 1][col].numberDomain)):
-                if state[row - 1][col].numberDomain[i] > number:
-                    state[row - 1][col].numberDomain.pop(i)
+            copyDomain = state[row - 1][col].numberDomain
+            for i in copyDomain:
+                if i > number:
+                    state[row - 1][col].numberDomain.remove(i)
                     if len(state[row - 1][col].numberDomain) == 0:
                         return False
     #bottom cell
@@ -214,15 +216,17 @@ def colorFC(state: list, row: int, col: int, number: int, color: str):
                         return False
     elif row + 1 < len(state) and state[row + 1][col].color != '#' and state[row + 1][col].number == -1:
         if allColors[state[row + 1][col].color] < allColors[color]:
-            for i in range(len(state[row + 1][col].numberDomain)):
-                if state[row + 1][col].numberDomain[i] < number:
-                    state[row + 1][col].numberDomain.pop(i)
+            copyDomain = state[row + 1][col].numberDomain
+            for i in copyDomain:
+                if i < number:
+                    state[row + 1][col].numberDomain.remove(i)
                     if len(state[row + 1][col].numberDomain) == 0:
                         return False
         else:
-            for i in range(len(state[row + 1][col].numberDomain)):
-                if state[row + 1][col].numberDomain[i] > number:
-                    state[row + 1][col].numberDomain.pop(i)
+            copyDomain = state[row + 1][col].numberDomain
+            for i in copyDomain:
+                if i > number:
+                    state[row + 1][col].numberDomain.remove(i)
                     if len(state[row + 1][col].numberDomain) == 0:
                         return False
     #left cell
@@ -245,15 +249,17 @@ def colorFC(state: list, row: int, col: int, number: int, color: str):
                         return False
     elif col - 1 >= 0 and state[row][col - 1].color != '#' and state[row][col - 1].number == -1:
         if allColors[state[row][col - 1].color] < allColors[color]:
-            for i in range(len(state[row][col - 1].numberDomain)):
-                if state[row][col - 1].numberDomain[i] < number:
-                    state[row][col - 1].numberDomain.pop(i)
+            copyDomain = state[row][col - 1].numberDomain
+            for i in copyDomain:
+                if i < number:
+                    state[row][col - 1].numberDomain.remove(i)
                     if len(state[row][col - 1].numberDomain) == 0:
                         return False
         else:
-            for i in range(len(state[row][col - 1].numberDomain)):
-                if state[row][col - 1].numberDomain[i] > number:
-                    state[row][col - 1].numberDomain.pop(i)
+            copyDomain = state[row][col - 1].numberDomain
+            for i in copyDomain:
+                if i > number:
+                    state[row][col - 1].numberDomain.remove(i)
                     if len(state[row][col - 1].numberDomain) == 0:
                         return False
     #right cell
@@ -276,15 +282,17 @@ def colorFC(state: list, row: int, col: int, number: int, color: str):
                         return False
     elif col + 1 < len(state) and state[row][col + 1].color != '#' and state[row][col + 1].number == -1:
         if allColors[state[row][col + 1].color] < allColors[color]:
-            for i in range(len(state[row][col + 1].numberDomain)):
-                if state[row][col + 1].numberDomain[i] < number:
-                    state[row][col + 1].numberDomain.pop(i)
+            copyDomain = state[row][col + 1].numberDomain
+            for i in copyDomain:
+                if i < number:
+                    state[row][col + 1].numberDomain.remove(i)
                     if len(state[row][col + 1].numberDomain) == 0:
                         return False
         else:
-            for i in range(len(state[row][col + 1].numberDomain)):
-                if state[row][col + 1].numberDomain[i] > number:
-                    state[row][col + 1].numberDomain.pop(i)
+            copyDomain = state[row][col + 1].numberDomain
+            for i in copyDomain:
+                if i > number:
+                    state[row][col + 1].numberDomain.remove(i)
                     if len(state[row][col + 1].numberDomain) == 0:
                         return False
 
